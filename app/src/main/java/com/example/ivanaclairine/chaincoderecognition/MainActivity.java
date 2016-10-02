@@ -62,17 +62,23 @@ public class MainActivity extends ActionBarActivity {
             Log.d("PicturePath: ", picturePath);
             final Bitmap originalBm = BitmapFactory.decodeFile(picturePath);
 
+            //hilangkan load button
+            buttonLoadImage.setVisibility(View.INVISIBLE);
+
             //tampilkan gambar yang dipilih dari galeri
-            final Bitmap bmTemp = Bitmap.createScaledBitmap(originalBm,150, 200, true);
+            Bitmap bmTemp = Bitmap.createScaledBitmap(originalBm, 150, 200, true);
+            Bitmap bmView = Bitmap.createScaledBitmap(originalBm, 600, 800, true);
             final ImageView imageView = (ImageView) findViewById(R.id.imgView);
-            imageView.setImageBitmap(bmTemp);
+
+            imageView.setImageBitmap(bmView);
 
             //Lakukan chain code
             ChainCode cc = new ChainCode(bmTemp);
-            List<Integer> chainCode = cc.doChainCode2px();
+            List<Integer> chainCode = cc.doChainCodeSmooth();
+            Log.d("chainCodediMain", String.valueOf(chainCode.size()));
 
             TextView chainList = (TextView) findViewById(R.id.predicted);
-            chainList.setText(chainCode.toString());
+            chainList.setText(String.valueOf(cc.doRecognize(chainCode)));
             chainList.setVisibility(View.VISIBLE);
         }
     }

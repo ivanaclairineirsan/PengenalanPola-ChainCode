@@ -14,6 +14,7 @@ public class ChainCode {
     public static final int white = -1;
     public List<Integer> directionX;
     public List<Integer> directionY;
+    public List<List<Integer>> numberPattern;
 
     Bitmap bitmap;
     int[][] pixels;
@@ -25,13 +26,20 @@ public class ChainCode {
         pixels = new int[bm.getWidth()][bm.getHeight()];
         width = bm.getWidth();
         height = bm.getHeight();
+        directionX = new ArrayList<>();
+        directionY = new ArrayList<>();
+        numberPattern = new ArrayList<>();
 
         for(int x=0; x<width; x++){
             for(int y=0; y<height; y++){
                 pixels[x][y] = bitmap.getPixel(x,y);
             }
         }
+        assignDirectionRule();
+        assignNumberPattern();
+    }
 
+    public void assignDirectionRule(){
         directionX.add(0, 0); directionY.add(0, -1);
         directionX.add(1, 1); directionY.add(1, -1);
         directionX.add(2, 1); directionY.add(2, 0);
@@ -40,6 +48,53 @@ public class ChainCode {
         directionX.add(5, -1); directionY.add(5, 1);
         directionX.add(6, -1); directionY.add(6, 0);
         directionX.add(7, -1); directionY.add(7, -1);
+    }
+
+    public void assignNumberPattern(){
+        List<Integer> numb0 = new ArrayList<>();
+        numb0.add(2); numb0.add(4);numb0.add(6);numb0.add(0);
+        numberPattern.add(0, numb0);
+        numberPattern.add(1, numb0);
+
+        List<Integer> numb2 = new ArrayList<>();
+        numb2.add(2); numb2.add(4); numb2.add(6); numb2.add(4); numb2.add(2); numb2.add(4);
+        numb2.add(6); numb2.add(0); numb2.add(2); numb2.add(0); numb2.add(6); numb2.add(0);
+        numberPattern.add(2, numb2);
+
+        List<Integer> numb3 = new ArrayList<>();
+        numb3.add(2); numb3.add(4); numb3.add(6); numb3.add(0); numb3.add(2); numb3.add(0);
+        numb3.add(6); numb3.add(0); numb3.add(2); numb3.add(0); numb3.add(6); numb3.add(0);
+        numberPattern.add(3, numb3);
+
+        List<Integer> numb4 = new ArrayList<>();
+        numb4.add(2); numb4.add(4); numb4.add(2); numb4.add(0); numb4.add(2);
+        numb4.add(4); numb4.add(6); numb4.add(0); numb4.add(6); numb4.add(0);
+        numberPattern.add(4, numb4);
+
+        List<Integer> numb5 = new ArrayList<>();
+        numb5.add(2); numb5.add(4); numb5.add(6); numb5.add(4); numb5.add(2); numb5.add(4);
+        numb5.add(6); numb5.add(0); numb5.add(2); numb5.add(0); numb5.add(6); numb5.add(0);
+        numberPattern.add(5, numb5);
+
+        List<Integer> numb6 = new ArrayList<>();
+        numb6.add(2); numb6.add(4); numb6.add(6); numb6.add(4); numb6.add(2); numb6.add(4);
+        numb6.add(6); numb6.add(0);
+        numberPattern.add(6, numb6);
+
+        List<Integer> numb7 = new ArrayList<>();
+        numb7.add(2); numb7.add(4);numb7.add(6);numb7.add(0); numb7.add(6); numb7.add(0);
+        numberPattern.add(7, numb7);
+
+        numberPattern.add(8, numb0);
+
+        List<Integer> numb9 = new ArrayList<>();
+        numb9.add(2); numb9.add(4); numb9.add(6); numb9.add(0);
+        numb9.add(2); numb9.add(0); numb9.add(6); numb9.add(0);
+        numberPattern.add(9, numb9);
+    }
+
+    public List<Integer> doChainCodeSmooth(){
+        return removeDuplicateList(removeNoise(doChainCode2px()));
     }
 
     public List<Integer> doChainCode2px(){
@@ -81,6 +136,37 @@ public class ChainCode {
         }
 
         return arah;
+    }
+
+    public int doRecognize (List<Integer> chainCode){
+        boolean stop = false;
+        int i=0;
+
+        while(!stop) {
+            List<Integer> temp = numberPattern.get(i);
+            if(isMatch(temp, chainCode))
+                return i;
+            else
+                i++;
+        }
+        return 0;
+    }
+
+    public boolean isMatch(List<Integer> input1, List<Integer> input2){
+        boolean stop = false;
+        int i=0;
+
+        while(!stop && i<input1.size()){
+            if(input1.size() != input2.size())
+                return false;
+            else{
+                if(input1.get(i) != input2.get(i))
+                    return false;
+            }
+            i++;
+        }
+
+        return true;
     }
 
     public boolean isBlackOnDirection(int x, int y, int direction){
@@ -227,5 +313,44 @@ public class ChainCode {
             }
         }
         return retArray;
+    }
+
+    public List<Integer> removeDuplicateList (List<Integer> input){
+        List<Integer> retList = new ArrayList<>();
+        retList.add(input.get(0));
+
+        for(Integer i: input){
+            if(i != retList.get(retList.size()-1)){
+                retList.add(i);
+            }
+        }
+        return retList;
+    }
+
+    public List<Integer> removeNoise (List<Integer> input){
+        List<Integer> retList = new ArrayList<>();
+        int temp = input.get(0);
+        int i=0;
+        int counter = 1;
+
+        while(i < input.size()-1){
+            if(input.get(i+1) == temp){
+                counter++;
+            }
+            else{
+                if(counter > 5){
+                    retList.add(temp);
+                }
+                temp = input.get(i);
+                counter = 1;
+            }
+            i++;
+        }
+
+        //keluar dari while
+        if(counter > 5)
+            retList.add(temp);
+
+        return retList;
     }
 }
